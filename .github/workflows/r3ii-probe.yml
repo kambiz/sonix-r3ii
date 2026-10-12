@@ -31,8 +31,10 @@ jobs:
         run: |
           sudo apt-get update
           sudo apt-get install -y --no-install-recommends mtd-utils genisoimage
-          sudo python3 -m pip install --break-system-packages \
-            ubi_reader==0.8.16 pycdlib==1.22.0 ziglang==0.17.0
+          # A venv, so pip never touches the packages Ubuntu installed.
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install ubi_reader==0.8.16 pycdlib==1.22.0 ziglang==0.17.0
+          echo "$RUNNER_TEMP/venv/bin" >>"$GITHUB_PATH"
 
       - name: Build r3ii_probe
         run: |
@@ -47,7 +49,7 @@ jobs:
           echo "$STOCK_SHA256  stock.upt" | sha256sum -c -
 
       - name: Build test image
-        run: sudo r3ii/pack/build_probe_upt.sh stock.upt out/r3ii_probe out/r3ii.upt
+        run: sudo env PATH="$PATH" r3ii/pack/build_probe_upt.sh stock.upt out/r3ii_probe out/r3ii.upt
 
       - uses: actions/upload-artifact@v4
         with:
