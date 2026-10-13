@@ -53,7 +53,9 @@ playback code can be rebuilt for this device. The hard parts are fitting it in
 1. **Hardware probe.** A test image that records the screen, touch, buttons
    and sound card. *Built; waiting for results from a real device.*
 2. **Device profile.** Add the R3 II to Sonix's model table: panel size, touch
-   range, key codes and ES9219 mixer controls.
+   range, key codes and ES9219 mixer controls. *Started: the 320x480 panel,
+   the volume ring and the DAC's card, checked against Compás's R3 II 2025
+   board, run in the simulator. See [R3II.md](R3II.md).*
 3. **Memory budget.** Measure Sonix's footprint and cut it to fit in 32 MB
    next to the kernel and system services.
 4. **First Sonix build.** Run the player against HiBy's 3.10 kernel and
@@ -149,6 +151,7 @@ No HiBy firmware or binaries are stored in this repository.
 | `R3II.md` | Technical notes on the R3 II and the stock firmware |
 | `r3ii/probe/` | The hardware probe |
 | `r3ii/pack/` | Unpacking and building `r3ii.upt` images |
+| `r3ii/sim/` | Simulator screenshots of Sonix as the R3 II |
 | `SONIX.md` | Sonix Player's own README: building, features, source tree |
 | `sonix-player/`, `sonix-packer/` | Sonix Player, unchanged from upstream so far |
 

@@ -134,6 +134,17 @@ bool usbc_port_attached(void) { return usbc_attached(); }
 // not.
 #define CS43131_REG_NODE "/sys/bus/i2c/devices/3-0030/write_reg_val"
 
+// "hw:N" for the card that holds the DAC's controls: card 0 on the X1600E
+// players, card 1 on the pre-2025 R3 II (sysinfo.c).
+static const char *dac_ctl_card(void) {
+	static char card[16];
+	if (!card[0]) {
+		const sysinfo_model_t *model = sysinfo_model();
+		snprintf(card, sizeof(card), "hw:%d", model ? model->alsa_card : 0);
+	}
+	return card;
+}
+
 bool alsa_board_is_cs43131(void) {
 	static int answer = -1;
 	if (answer < 0) {
@@ -141,6 +152,11 @@ bool alsa_board_is_cs43131(void) {
 		answer = model ? model->cs43131 : access(CS43131_REG_NODE, F_OK) == 0;
 	}
 	return answer != 0;
+}
+
+bool alsa_board_has_hbc3000(void) {
+	const sysinfo_model_t *model = sysinfo_model();
+	return !alsa_board_is_cs43131() && !(model && model->es9219);
 }
 
 static bool lineout_on;
@@ -233,8 +249,8 @@ void alsa_list_controls(char *out, size_t out_size) {
 	}
 	out[0] = '\0';
 
-	if (snd_ctl_open(&ctl, "hw:0", 0) < 0) {
-		snprintf(out, out_size, "  (no hw:0 card)\n");
+	if (snd_ctl_open(&ctl, dac_ctl_card(), 0) < 0) {
+		snprintf(out, out_size, "  (no %s card)\n", dac_ctl_card());
 		return;
 	}
 
@@ -345,7 +361,7 @@ int alsa_set_control(const char *name, long value) {
 
 	alsa_wait_output_reinit();
 
-	err = snd_ctl_open(&ctl, "hw:0", 0);
+	err = snd_ctl_open(&ctl, dac_ctl_card(), 0);
 	if (err < 0) {
 		return err;
 	}
@@ -725,6 +741,18 @@ static int write_output_route(int route) {
 // current_output cache is what keeps the route from being touched mid-track.
 void auto_set_output(void) {
 	alsa_wait_output_reinit();
+
+	// The ES9219 board: the stock player writes "Output Port Switch" too, but
+	// which value is which socket has not been read off a running device yet.
+	// Until it has, the route stays where the driver left it.
+	if (sysinfo_model() && sysinfo_model()->es9219) {
+		static bool told;
+		if (!told) {
+			printf("set output: ES9219 routes not mapped, left as they are\n");
+			told = true;
+		}
+		return;
+	}
 
 	// The CS43131 board: one route, no line-out flag, no transition to force.
 	if (alsa_board_is_cs43131()) {

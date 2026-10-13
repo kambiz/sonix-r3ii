@@ -5,7 +5,8 @@ This branch is the start of a port of Sonix Player to the **original HiBy R3 II*
 use a different processor; nothing here applies to them, and nothing built for
 them may be flashed on this one.
 
-Status: **hardware survey**. No Sonix code runs on the device yet.
+Status: **hardware survey**, and a first R3 II profile in Sonix that runs in
+the simulator. No Sonix code runs on the device yet.
 
 ## What the stock 1.4 firmware says about the hardware
 
@@ -64,6 +65,69 @@ and plays through ALSA (`libasound`).
   (no Game Boy emulator, smaller caches) before it is worth a full build.
 - The ES9219 mixer controls, the panel size and orientation, the touch range
   and the key codes are what `r3ii_probe` is for.
+
+## What Compás's R3 II 2025 board tells us
+
+[Compás](https://github.com/Starnished66/compas-player) has an experimental
+`r3ii_2025` board. The 2025 model is the same body with an X1600E, and this
+1.4 firmware ships 2025 resources too (`R3II_2025_fonts`,
+`ot_devices_2025.json`). Each Compás value was checked against the 1.4
+firmware before it was used:
+
+| Compás `r3ii_2025` | Pre-2025 R3 II, from the 1.4 firmware | Used? |
+|---|---|---|
+| Panel 320x480 | Nine full-screen theme images are 320x480; `theme2/playing_plane` is a 320x310 cover over a 320x170 panel, Compás's 310/170 split | Yes |
+| Volume ring on `sa-ring-keys`, KEY_RIGHT clockwise | The kernel registers `sa-ring-keys` ("ring left", "ring right"); the stock player opens it by that name | Yes |
+| A Previous key | The kernel's keys: "play key", "next song key", "previous song key", "power key" | Yes |
+| Buttons on `jz adc keyboard` and `md-gpio-keys` | Neither name is in the 3.10 kernel; it has `gpio-keys` and `adc_key` | No: own names, to confirm with the probe |
+| DAC on ALSA card 0 | `ot_devices.json` puts the analog output on **card 1**; card 0 is S/PDIF, card 3 USB. Only `ot_devices_2025.json` says card 0 | No: card 1 |
+| Charge voltage 4.40 V (AXP2101 enum 5) | No `axp2101.sh` here; the AXP2101 driver is built into the kernel and its setting is not known | No: Sonix's charge limiter stays off |
+| One volume curve for every board (0.34 dB a step) | HiBy's HDB/MDB/LDB tables in `ot_devices.json` are byte-for-byte the R3 Pro II tables Sonix already uses | Sonix's own tables |
+
+## The R3 II in Sonix
+
+`sonix-player/src/system/device/sysinfo.c` has a "HiBy R3 II" row, picked
+when `system-info.json` says `"device-name": "HiBy R3 II"`:
+
+- **Panel:** 320x480.
+- **Update file:** `r3ii.upt`.
+- **Buttons:** `gpio-keys` and `adc_key`. With neither found, Sonix falls back
+  to event0 and event2.
+- **Volume ring:** `sa-ring-keys`. Its KEY_RIGHT and KEY_LEFT become volume
+  up and down (`system.c`).
+- **DAC controls:** on `hw:1` (`alsa-controls.c`).
+- **ES9219 routes:** "Output Port Switch" is left where the driver puts it,
+  because which value is which socket is not known yet.
+- **No HBC3000:** the R3 Pro II's suspend and resume steps for it are
+  skipped (`alsa_board_has_hbc3000()`).
+- **Charge limiter:** off.
+- **No serial prefix.**
+
+The simulator runs it at 320x480 (`r3ii/sim/sonix-320x480.png`: home, track
+list, Now Playing, clock setup). Everything works, but the interface was drawn
+for 480 pixels wide:
+
+- tile labels on the home and Music grids are cut off or hidden;
+- titles are truncated to a few characters;
+- the clock setup's day and year rollers are clipped;
+- the Now Playing transport row is crowded.
+
+Compás solved the same problem on the 2025 model by scaling its widths from a
+480-pixel reference. Sonix needs the same treatment.
+
+Still unknown, and asked of the probe:
+
+- the input names of the buttons;
+- the "Output Port Switch" values and the jack switches;
+- which I2C bus has the AXP2101 and the ES9219;
+- the charge voltage.
+
+Not addressed yet:
+
+- the default ALSA PCM: Sonix plays to "default", which on this board has to
+  be card 1;
+- glibc 2.16;
+- 32 MB of RAM.
 
 ## Step 1: the hardware probe
 

@@ -17,6 +17,9 @@ int detect_output(void); // the "Output Port Switch" value for what is plugged i
 // port. No HBC3000, no 4.4 mm socket, no DRE or NOS, and the digital filter
 // goes to the chip by another way. See alsa-controls.c.
 bool alsa_board_is_cs43131(void);
+// True only on the R3 Pro II: the board whose route writes power and reload the
+// HBC3000 audio bridge, which goes down in mem and has to be brought back.
+bool alsa_board_has_hbc3000(void);
 
 // The route on the OTHER physical socket, where the route is parked before a
 // suspend. Routes 1 and 2 are the two faces of the 3.5 mm one and the driver
