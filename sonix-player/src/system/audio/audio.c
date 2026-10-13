@@ -328,8 +328,9 @@ static void *output_reinit_thread(void *unused) {
 }
 
 void audio_start_output_reinit_after_resume(void) {
-	// No HBC3000 on the CS43131 board: nothing went down, nothing to re-init.
-	if (alsa_board_is_cs43131()) {
+	// No HBC3000 on the CS43131 or ES9219 boards: nothing went down, nothing
+	// to re-init.
+	if (!alsa_board_has_hbc3000()) {
 		alsa_suspend_restore();
 		return;
 	}
@@ -369,7 +370,7 @@ void audio_start_output_reinit_after_resume(void) {
 // Called with the PCM closed: audio_suspend_freeze() has run. Closes the card
 // to everything but the re-init that follows the suspend, or the attempt.
 void audio_park_output_before_suspend(void) {
-	if (alsa_board_is_cs43131()) {
+	if (!alsa_board_has_hbc3000()) {
 		return; // no HBC3000, and no thump to take away
 	}
 	alsa_wait_output_reinit(); // the last wake's re-init, if still running

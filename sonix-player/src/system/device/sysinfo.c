@@ -18,7 +18,12 @@ static char device_name[64];
 static char dac_info[96];
 static char ota_repo[128];
 
-// Every player this binary knows how to be. Both serial prefixes are the ones
+// The pre-2025 R3 II's case buttons, by the names in its 3.10 kernel: the
+// power, play and skip keys on "gpio-keys", and "adc_key". Not yet seen on a
+// running device; with neither found, system.c watches event0 and event2.
+static const char *const R3II_BUTTONS[] = {"gpio-keys", "adc_key", NULL};
+
+// Every player this binary knows how to be. The serial prefixes are the ones
 // printed on the box.
 static const sysinfo_model_t MODELS[] = {
 	{
@@ -44,6 +49,35 @@ static const sysinfo_model_t MODELS[] = {
 		.tap_wake = false,
 		.one_flank = true,
 		.media_keys_swapped = false,
+	},
+	// The pre-2025 R3 II: Ingenic X1000, HiBy's 3.10 kernel and drivers, an
+	// ES9219, a 3.5 mm and a 4.4 mm socket and a volume ring. What is known
+	// comes from its stock 1.4 firmware and from Compas's R3 II 2025 board,
+	// which shares the body (R3II.md).
+	//
+	//   - The panel: the stock theme's full-screen images are 320x480, and its
+	//     player page is a 320x310 cover over a 320x170 control panel.
+	//   - The DAC's controls are on card 1: the stock ot_devices.json puts the
+	//     analog output there, the S/PDIF output on card 0 and USB on card 3.
+	//   - The ring is "sa-ring-keys", as on the R3 II 2025.
+	//   - No serial prefix: what the box prints is not known.
+	//   - pmic_charger false: axpcharge.c programs the AXP2101 over I2C, and
+	//     neither its bus on this board nor HiBy's charge voltage is known.
+	{
+		.name = "HiBy R3 II",
+		.panel_width = 320,
+		.panel_height = 480,
+		.update_stem = "r3ii",
+		.serial_prefix = NULL,
+		.pmic_charger = false,
+		.cs43131 = false,
+		.tap_wake = false,
+		.one_flank = false,
+		.media_keys_swapped = false,
+		.es9219 = true,
+		.alsa_card = 1,
+		.button_devices = R3II_BUTTONS,
+		.knob_device = "sa-ring-keys",
 	},
 };
 
@@ -264,7 +298,7 @@ const char *sysinfo_serial_number(void) {
 	serial[0] = '\0';
 
 	const sysinfo_model_t *model = sysinfo_model();
-	if (!model) {
+	if (!model || !model->serial_prefix) {
 		return serial; // no prefix to build it from
 	}
 

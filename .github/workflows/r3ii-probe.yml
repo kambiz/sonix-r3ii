@@ -1,0 +1,72 @@
+# Builds the R3 II hardware probe and a test r3ii.upt around it, and
+# publishes the image as a pre-release so it can be downloaded from a phone.
+#
+# The stock 1.4 firmware is not in this repository: it is fetched from the
+# release in kambiz/hiby and checked against its sha256.
+
+name: R3 II probe image
+
+on:
+  push:
+    branches: [r3ii-port]
+    paths:
+      - "r3ii/**"
+      - ".github/workflows/r3ii-probe.yml"
+  workflow_dispatch:
+
+permissions:
+  contents: write
+
+env:
+  STOCK_URL: https://github.com/kambiz/hiby/releases/download/1.4/r3ii.upt
+  STOCK_SHA256: 4da4166500acf408da6c0200eaa55d7ba4430e7e90ef2bb7f11c9ce460f54b2c
+
+jobs:
+  image:
+    runs-on: ubuntu-24.04
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Install tools
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y --no-install-recommends mtd-utils genisoimage
+          # A venv, so pip never touches the packages Ubuntu installed.
+          python3 -m venv "$RUNNER_TEMP/venv"
+          "$RUNNER_TEMP/venv/bin/pip" install ubi_reader==0.8.16 pycdlib==1.22.0 ziglang==0.17.0
+          echo "$RUNNER_TEMP/venv/bin" >>"$GITHUB_PATH"
+
+      - name: Build r3ii_probe
+        run: |
+          mkdir -p out
+          python3 -m ziglang cc -target mipsel-linux-musleabihf -mcpu=mips32r2 -static -Os \
+            -Wall -Wextra -Werror -o out/r3ii_probe r3ii/probe/r3ii_probe.c -lm
+          file out/r3ii_probe
+
+      - name: Fetch stock firmware
+        run: |
+          curl -fsSL -o stock.upt "$STOCK_URL"
+          echo "$STOCK_SHA256  stock.upt" | sha256sum -c -
+
+      - name: Build test image
+        run: sudo env PATH="$PATH" r3ii/pack/build_probe_upt.sh stock.upt out/r3ii_probe out/r3ii.upt
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: r3ii-probe-${{ github.run_number }}
+          path: out/
+
+      - name: Publish pre-release
+        env:
+          GH_TOKEN: ${{ github.token }}
+        run: |
+          tag="r3ii-probe-${{ github.run_number }}"
+          md5=$(md5sum out/r3ii.upt | cut -d' ' -f1)
+          cat >notes.md <<EOF
+          Test image for the **pre-2025 HiBy R3 II** only (stock 1.4 + hardware probe).
+          Built from ${{ github.sha }}. See R3II.md for what it does and how to install it.
+
+          md5 of r3ii.upt: \`$md5\`
+          EOF
+          gh release create "$tag" out/r3ii.upt --prerelease \
+            --target "${{ github.sha }}" --title "R3 II probe #${{ github.run_number }}" --notes-file notes.md

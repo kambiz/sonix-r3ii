@@ -73,6 +73,14 @@ typedef struct {
 	bool tap_wake;			   // the touch controller can wake the screen (power.h)
 	bool one_flank;			   // every button on the right flank (remap.c)
 	bool media_keys_swapped;   // KEY_NEXTSONG is the upper skip key, not next (system.c)
+	bool es9219;			   // ES9219 DAC: its "Output Port Switch" values are not mapped (alsa-controls.c)
+	int alsa_card;			   // the ALSA card that holds the DAC's mixer controls
+	// The input names of the buttons on the case, NULL-terminated, or NULL for
+	// "md-gpio-keys" and "jz adc keyboard" (system.c).
+	const char *const *button_devices;
+	// The input name of a volume ring that turns by KEY_RIGHT and KEY_LEFT
+	// presses, one per detent, or NULL for none (system.c).
+	const char *knob_device;
 } sysinfo_model_t;
 
 // The entry for the name in the file, or NULL when the file says nothing or

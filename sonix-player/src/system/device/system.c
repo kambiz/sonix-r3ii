@@ -1649,6 +1649,7 @@ static void run_hook_gesture(hook_clicks_t *clicks) {
 typedef struct {
 	char node[32];
 	bool headset;	  // the keys on the headphone cable, not those on the case
+	bool knob;		  // the volume ring: KEY_RIGHT and KEY_LEFT are volume steps
 	int preopened_fd; // already open, or -1 to open `node`
 } input_node_t;
 
@@ -1779,6 +1780,16 @@ static void *input_thread_func(void *arg) {
 
 		if (ev.type != EV_KEY) {
 			continue;
+		}
+
+		// The volume ring sends a press and a release per detent, KEY_RIGHT
+		// clockwise. From here on it is a volume key like any other.
+		if (info->knob) {
+			if (ev.code == KEY_RIGHT) {
+				ev.code = KEY_VOLUMEUP;
+			} else if (ev.code == KEY_LEFT) {
+				ev.code = KEY_VOLUMEDOWN;
+			}
 		}
 
 		log_key_event(node, &ev);
@@ -1933,13 +1944,14 @@ static void *input_thread_func(void *arg) {
 	return NULL;
 }
 
-static void start_input_thread_fd(const char *node, bool headset, int fd) {
+static void start_node_thread(const char *node, bool headset, bool knob, int fd) {
 	input_node_t *info = calloc(1, sizeof(*info));
 	if (!info) {
 		return;
 	}
 	snprintf(info->node, sizeof(info->node), "%s", node);
 	info->headset = headset;
+	info->knob = knob;
 	info->preopened_fd = fd;
 
 	pthread_t thread;
@@ -1949,6 +1961,8 @@ static void start_input_thread_fd(const char *node, bool headset, int fd) {
 		free(info);
 	}
 }
+
+static void start_input_thread_fd(const char *node, bool headset, int fd) { start_node_thread(node, headset, false, fd); }
 
 #ifndef HOST_BUILD
 static void start_input_thread(const char *node, bool headset) { start_input_thread_fd(node, headset, -1); }
@@ -1980,13 +1994,15 @@ void input_host_button(int code, bool down) {
 }
 #endif
 
-// One thread per built-in button device, and one on the touch panel.
+// One thread per built-in button device, one on the volume ring where the
+// model has one, and one on the touch panel.
 //
-// The buttons are found by the names their drivers register -- the power key
-// on "md-gpio-keys", the volume and transport keys on "jz adc keyboard" -- and
-// not by number: the numbers are the order the drivers probed in, and a touch
-// controller probing late moves them. event0 and event2, the numbers they
-// usually have, only when neither name is found.
+// The buttons are found by the names their drivers register -- by default the
+// power key on "md-gpio-keys", the volume and transport keys on "jz adc
+// keyboard"; sysinfo names others per model -- and not by number: the numbers
+// are the order the drivers probed in, and a touch controller probing late
+// moves them. event0 and event2, the numbers they usually have, only when no
+// name is found.
 //
 // The touch panel is watched too, as the node main.c found for it: with
 // double-tap wake on, its controller reports the wake tap as a power-key
@@ -1994,7 +2010,10 @@ void input_host_button(int code, bool down) {
 // these threads ignore.
 #ifndef HOST_BUILD
 static void start_builtin_input_threads(void) {
-	static const char *const NAMES[] = {"md-gpio-keys", "jz adc keyboard"};
+	static const char *const DEFAULT_NAMES[] = {"md-gpio-keys", "jz adc keyboard", NULL};
+	const sysinfo_model_t *model = sysinfo_model();
+	const char *const *names = model && model->button_devices ? model->button_devices : DEFAULT_NAMES;
+	const char *knob = model ? model->knob_device : NULL;
 	const char *touch = panel_touch_device();
 	int found = 0;
 
@@ -2018,8 +2037,13 @@ static void start_builtin_input_threads(void) {
 		if (!named || (touch && strcmp(node, touch) == 0)) {
 			continue;
 		}
-		for (size_t i = 0; i < sizeof(NAMES) / sizeof(NAMES[0]); i++) {
-			if (strcmp(name, NAMES[i]) == 0) {
+		if (knob && strcmp(name, knob) == 0) {
+			printf("input: %s is the volume ring (%s)\n", node, name);
+			start_node_thread(node, false, true, -1);
+			continue;
+		}
+		for (size_t i = 0; names[i]; i++) {
+			if (strcmp(name, names[i]) == 0) {
 				printf("input: %s is a built-in button device (%s)\n", node, name);
 				start_input_thread(node, false);
 				found++;
