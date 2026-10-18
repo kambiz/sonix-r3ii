@@ -113,6 +113,8 @@ ICONS = [
     # Power menu.
     ("power-off.svg", "power_off", 56),
     ("reboot.svg", "reboot", 56),
+    # The low battery warning and the countdown to the shutdown at 1 %.
+    ("battery-warning.svg", "battery_warning", 56),
     # Library pages. One glyph per index, and the stand-in for artwork that is
     # not there: they ride inside the 72 px thumbnail box on a library row and
     # the 56 px one on a search hit.
@@ -181,6 +183,8 @@ ICONS = [
     ("delete.svg", "delete", 30),
     ("space.svg", "space", 34),
     ("chevron-up.svg", "chevron_up", 32), # built, and currently unused
+    # The Music page's "more below", shown for a moment when the page opens.
+    ("chevron-down.svg", "chevron_down", 36),
     # The control centre's close hint, drawn the way iOS draws its home
     # indicator. Big because the glyph's line spans only the middle 14 of its
     # 24 units, so 56 px of bitmap is a ~33 px bar.
@@ -233,7 +237,11 @@ ICONS = [
     ("grip-horizontal.svg", "grip", 36),
     ("move-vertical.svg", "reorder", 34), # turns on reordering in a playlist
     ("now-playing.svg", "now_playing", 32), # the playing row in the queue
+    # The queue's corner, after a long press on a row: choose rows to take out.
+    # Moving them by hand is arrow_down_up, next to it.
+    ("circle-dashed-check.svg", "select_mode", 34),
     ("plus.svg", "plus", 36),
+    ("minus.svg", "minus", 36),             # the metronome: one beat per minute slower
     ("import.svg", "import", 34), # brings an .m3u from the card into the player's folder
     ("reset.svg", "reset", 36),             # MSEB / equalizer: back to flat
     ("circle-check.svg", "circle_check", 64), # the confirmation popup
@@ -268,6 +276,9 @@ ICONS = [
     ("star.svg", "star", 32),
     ("star-filled.svg", "star_filled", 32),
     ("star.svg", "star_corner", 34),
+    # Over the lyrics, beside the star or the ellipsis: look the words up again
+    # on LRCLIB, to replace them. The star's size, since the two sit together.
+    ("lyrics-search.svg", "lyrics_search", 32),
     ("radio-recent.svg", "radio_recent", 34), # stations played most recently
     ("custom-radio.svg", "radio_custom", 34), # the stations written into radio.txt
     # Under a station's name: the stream's quality, one glyph in four colours
@@ -434,6 +445,7 @@ COLOR_ICONS = [
     ("flappy-bird.png", "menu_flappy_bird", SECTION_ICON_SIZE),
     ("ebook.png", "menu_books", SECTION_ICON_SIZE),
     ("file-explorer.png", "menu_file_explorer", SECTION_ICON_SIZE),
+    ("metronome.png", "menu_metronome", SECTION_ICON_SIZE),
 
     # The service badges in the player's top right corner, where the radio puts
     # its LIVE mark. They sit over the cover art, so these are the outlined
