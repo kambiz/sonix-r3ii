@@ -165,8 +165,9 @@ the stock geometry, unpacks the result again and compares it file by file
 4. **Keep headphones off your ears** for the first minute: the tone is quiet
    (-30 dBFS), but the volume it plays at is whatever the mixer was left at.
 5. While the bands are up: photograph the screen, touch all four corners and
-   the middle, then press every button once, slowly, in a known order
-   (for example: power, volume up, volume down, previous, play, next).
+   the middle, then press every button once and turn the volume knob one
+   click each way, slowly, in a known order (for example: power, knob
+   clockwise, knob anticlockwise, previous, play, next).
 6. When the HiBy player is back, delete `r3ii.upt` from the card and collect
    the four files from `r3ii_probe/`.
 

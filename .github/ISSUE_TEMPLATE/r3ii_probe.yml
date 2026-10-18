@@ -1,0 +1,64 @@
+name: R3 II probe results
+description: The results of an r3ii-probe test image on a pre-2025 HiBy R3 II.
+title: "[R3 II probe] "
+labels: ["r3ii"]
+body:
+  - type: markdown
+    attributes:
+      value: |
+        For the **pre-2025 HiBy R3 II** only, after installing an `r3ii-probe-N` test image
+        (see the README). Attach files by dragging them into the boxes, or by tapping the
+        box and choosing them on a phone.
+
+  - type: input
+    id: image
+    attributes:
+      label: Test image
+      description: The release you installed.
+      placeholder: r3ii-probe-3
+    validations:
+      required: true
+
+  - type: dropdown
+    id: outcome
+    attributes:
+      label: What happened
+      options:
+        - The update installed, the colour bands showed, then the HiBy player started
+        - The update installed, but no colour bands showed
+        - The update was refused or showed an error
+        - The player did not start normally afterwards
+    validations:
+      required: true
+
+  - type: textarea
+    id: files
+    attributes:
+      label: Probe files
+      description: probe.log, sysinfo.txt, events.txt and aplay.txt from the r3ii_probe folder on the card.
+    validations:
+      required: false
+
+  - type: textarea
+    id: photo
+    attributes:
+      label: Photo of the screen
+      description: Taken while the colour bands were showing.
+    validations:
+      required: false
+
+  - type: textarea
+    id: buttons
+    attributes:
+      label: Buttons, in the order you pressed them
+      placeholder: power, volume knob clockwise, volume knob anticlockwise, previous, play, next
+    validations:
+      required: false
+
+  - type: textarea
+    id: notes
+    attributes:
+      label: Anything else
+      description: Did the tone play? Was anything odd on screen?
+    validations:
+      required: false

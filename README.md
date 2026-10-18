@@ -89,17 +89,17 @@ iPhone, use a USB-C or Lightning SD card reader with the Files app.
 5. While the colour bands are showing:
    - take a photo of the screen;
    - touch all four corners and the middle;
-   - press every button once, slowly, and write down the order you pressed
-     them in.
+   - press every button once, slowly, and turn the volume knob one click
+     each way; write down the order you did them in.
 6. When HiBy's player is back, delete `r3ii.upt` from the card.
 
 The results are in the `r3ii_probe` folder on the card: `probe.log`,
 `sysinfo.txt`, `events.txt` and `aplay.txt`.
 
-**Sharing the results:** open a
-[new issue](https://github.com/kambiz/sonix-r3ii/issues/new) and attach the
-four files, the photo and your button order. This works from Safari on a
-phone.
+**Sharing the results:** fill in the
+[R3 II probe results](https://github.com/kambiz/sonix-r3ii/issues/new?template=r3ii_probe.yml)
+form and attach the four files, the photo and your button order. This works
+from Safari on a phone. Even "the update was refused" is worth reporting.
 
 ## Going back to stock
 
@@ -153,7 +153,7 @@ No HiBy firmware or binaries are stored in this repository.
 | `r3ii/pack/` | Unpacking and building `r3ii.upt` images |
 | `r3ii/sim/` | Simulator screenshots of Sonix as the R3 II |
 | `SONIX.md` | Sonix Player's own README: building, features, source tree |
-| `sonix-player/`, `sonix-packer/` | Sonix Player, unchanged from upstream so far |
+| `sonix-player/`, `sonix-packer/` | Sonix Player 1.3.0, with the R3 II model added (see R3II.md) |
 
 ## Credits and license
 
