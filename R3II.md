@@ -42,8 +42,12 @@ used, LZO, format version 4.
 
 ### How an update is installed
 
-The stock player looks for `/mnt/sd_0/r3ii.upt`, writes `recovery` to
-`/proc/jz/reset/reset` and reboots. U-Boot then starts its separate recovery
+Settings > System settings > Firmware update > Via SD-card checks the card
+for `a:\update.upt` first (`a:` is the card in HiBy's file layer), then for
+`a:\<name>.upt`, where the name comes from one of the player's settings and
+is not `r3ii` on this unit: a card with only `r3ii.upt` gets "No firmware
+update file found!", the stock file included. On a hit it writes `recovery`
+to `/proc/jz/reset/reset` and reboots, without passing the file name on. U-Boot then starts its separate recovery
 mode, which flashes the kernel and the rootfs from the card. The recovery
 system is not part of the `.upt`, so a test image cannot overwrite it.
 
@@ -159,16 +163,18 @@ the stock geometry, unpacks the result again and compares it file by file
 ### Running it
 
 1. Charge the player above 50 %.
-2. Copy `r3ii.upt` from the pre-release to the **root** of the microSD card.
-3. Install it the way an official update is installed (the firmware update
-   option in the player's system settings), and let it reboot.
+2. Copy `r3ii.upt` from the pre-release to the **root** of the microSD card,
+   with a second copy named `update.upt` next to it. Which name the recovery
+   system reads is not known, so both are there.
+3. Settings > System settings > Firmware update > Via SD-card, confirm, and
+   let it reboot.
 4. **Keep headphones off your ears** for the first minute: the tone is quiet
    (-30 dBFS), but the volume it plays at is whatever the mixer was left at.
 5. While the bands are up: photograph the screen, touch all four corners and
    the middle, then press every button once and turn the volume knob one
    click each way, slowly, in a known order (for example: power, knob
    clockwise, knob anticlockwise, previous, play, next).
-6. When the HiBy player is back, delete `r3ii.upt` from the card and collect
+6. When the HiBy player is back, delete both `.upt` files from the card and collect
    the four files from `r3ii_probe/`.
 
 ### Going back to stock

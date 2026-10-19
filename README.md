@@ -81,9 +81,12 @@ iPhone, use a USB-C or Lightning SD card reader with the Files app.
 
 1. Charge the player above 50 %.
 2. Download `r3ii.upt` from the latest `r3ii-probe` release and copy it to the
-   **root** of the microSD card.
-3. Install it the way you would install an official update: the firmware
-   update option in the player's system settings. Let it reboot.
+   **root** of the microSD card. Then put a second copy next to it named
+   **`update.upt`**: in the Files app, Duplicate the file and rename the copy.
+   The player's SD-card updater looks for `update.upt` first; with only
+   `r3ii.upt` it can say "No firmware update file found!".
+3. On the player: **Settings > System settings > Firmware update > Via
+   SD-card**, and confirm. Let it reboot.
 4. **Keep headphones off your ears for the first minute.** The tone is quiet,
    but it plays at whatever volume the player was last set to.
 5. While the colour bands are showing:
@@ -91,7 +94,7 @@ iPhone, use a USB-C or Lightning SD card reader with the Files app.
    - touch all four corners and the middle;
    - press every button once, slowly, and turn the volume knob one click
      each way; write down the order you did them in.
-6. When HiBy's player is back, delete `r3ii.upt` from the card.
+6. When HiBy's player is back, delete both `.upt` files from the card.
 
 The results are in the `r3ii_probe` folder on the card: `probe.log`,
 `sysinfo.txt`, `events.txt` and `aplay.txt`.
@@ -103,7 +106,7 @@ from Safari on a phone. Even "the update was refused" is worth reporting.
 
 ## Going back to stock
 
-Install the stock HiBy 1.4 `r3ii.upt` the same way: put it in the root of the
+Install the stock HiBy 1.4 `r3ii.upt` the same way, with its `update.upt` copy: put it in the root of the
 card and use the firmware update option. A copy is in the
 [1.4 release of kambiz/hiby](https://github.com/kambiz/hiby/releases/tag/1.4).
 HiBy also publishes it in its own firmware folder on Google Drive.
